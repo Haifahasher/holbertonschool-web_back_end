@@ -18,8 +18,7 @@ class Server:
         self.__indexed_dataset = None
 
     def dataset(self) -> List[List]:
-        """Cached dataset
-        """
+        """ Cached dataset """
         if self.__dataset is None:
             with open(self.DATA_FILE) as f:
                 reader = csv.reader(f)
@@ -29,8 +28,7 @@ class Server:
         return self.__dataset
 
     def indexed_dataset(self) -> Dict[int, List]:
-        """Dataset indexed by sorting position, starting at 0
-        """
+        """ Dataset indexed by sorting position, starting at 0 """
         if self.__indexed_dataset is None:
             dataset = self.dataset()
             truncated_dataset = dataset[:1000]
@@ -40,44 +38,24 @@ class Server:
         return self.__indexed_dataset
 
     def get_hyper_index(self, index: int = None, page_size: int = 10) -> Dict:
-        """
-        Get a page of the dataset with hypermedia metadata using index-based pagination.
-        
-        Args:
-            index: The start index for the page (0-indexed)
-            page_size: The number of items per page
-            
-        Returns:
-            A dictionary containing the page data and metadata
-        """
-        if index is None:
-            index = 0
-            
-        assert isinstance(index, int) and index >= 0, "index must be a non-negative integer"
-        assert isinstance(page_size, int) and page_size > 0, "page_size must be a positive integer"
-        
-        indexed_dataset = self.indexed_dataset()
-        total_items = len(indexed_dataset)
-        
-        assert index < total_items, "index out of range"
-        
-        # Get the data for the current page
-        data = []
-        current_index = index
-        items_added = 0
-        
-        while current_index < total_items and items_added < page_size:
-            if current_index in indexed_dataset:
-                data.append(indexed_dataset[current_index])
-                items_added += 1
-            current_index += 1
-        
-        # Calculate next_index
-        next_index = current_index if current_index < total_items else None
-        
-        return {
-            'index': index,
-            'data': data,
-            'page_size': len(data),
-            'next_index': next_index
-        }
+        """ Get Hyper Index """
+        assert isinstance(index, int)
+        assert isinstance(page_size, int)
+
+        assert page_size > 0
+        assert 0 <= index < len(self.indexed_dataset())
+
+        my_list, my_dict = list(), dict()
+        next_index = index + page_size
+        index_dataset = self.indexed_dataset()
+        for i in range(index, next_index):
+            if index_dataset.get(i):
+                my_list.append(index_dataset[i])
+            else:
+                next_index += 1
+                i += 1
+        my_dict['data'] = my_list
+        my_dict['index'] = index
+        my_dict['next_index'] = next_index
+        my_dict['page_size'] = page_size
+        return my_dict

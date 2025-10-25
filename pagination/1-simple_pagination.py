@@ -1,27 +1,11 @@
 #!/usr/bin/env python3
 """
-Simple pagination
+Simple Pagination
 """
 
 import csv
 import math
 from typing import List
-
-
-def index_range(page: int, page_size: int) -> tuple:
-    """
-    Calculate the start and end index for a given page and page size.
-    
-    Args:
-        page: The page number (1-indexed)
-        page_size: The number of items per page
-        
-    Returns:
-        A tuple containing the start and end index
-    """
-    start_index = (page - 1) * page_size
-    end_index = start_index + page_size
-    return (start_index, end_index)
 
 
 class Server:
@@ -44,23 +28,19 @@ class Server:
         return self.__dataset
 
     def get_page(self, page: int = 1, page_size: int = 10) -> List[List]:
-        """
-        Get a page of the dataset.
-        
-        Args:
-            page: The page number (1-indexed)
-            page_size: The number of items per page
-            
-        Returns:
-            A list of rows for the requested page
-        """
-        assert isinstance(page, int) and page > 0, "page must be a positive integer"
-        assert isinstance(page_size, int) and page_size > 0, "page_size must be a positive integer"
-        
-        dataset = self.dataset()
-        start_index, end_index = index_range(page, page_size)
-        
-        if start_index >= len(dataset):
-            return []
-        
-        return dataset[start_index:end_index]
+        """ Get Page """
+        assert isinstance(page, int)
+        assert isinstance(page_size, int)
+        assert page > 0
+        assert page_size > 0
+
+        def index_range(page: int, page_size: int) -> tuple:
+            """ index """
+            return (page - 1) * page_size, page * page_size
+        items = index_range(page, page_size)
+        start = items[0]
+        end = items[1]
+        get_dataset = self.dataset()
+        get_page = get_dataset[start: end]
+
+        return get_page
