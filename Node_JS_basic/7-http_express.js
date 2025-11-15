@@ -48,22 +48,16 @@ const app = express();
 module.exports = app;
 
 app.get('/', (_, res) => {
-  res.writeHead(200, {
-    'Content-Type': 'text/plain',
-  });
-  res.end('Hello Holberton School!');
+  res.send('Hello Holberton School!');
 });
 
 app.get('/students', async (_, res) => {
-  res.writeHead(200, {
-    'Content-Type': 'text/plain',
-  });
   res.write('This is the list of our students\n');
   try {
     const stds = await countStudentsStr(process.argv[2]);
     res.end(stds);
   } catch (e) {
-    res.end('Cannot load the database');
+    res.status(500).end('Cannot load the database');
   }
 });
 
