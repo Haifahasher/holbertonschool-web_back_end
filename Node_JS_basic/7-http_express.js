@@ -2,29 +2,26 @@ const express = require('express');
 const countStudents = require('./3-read_file_async');
 
 const app = express();
+const PORT = 1245;
 
 app.get('/', (req, res) => {
   res.send('Hello Holberton School!');
 });
 
 app.get('/students', (req, res) => {
-  res.write('This is the list of our students\n');
-  const output = [];
-  const originalLog = console.log;
-  console.log = (...args) => {
-    output.push(args.join(' '));
-  };
+  res.set('Content-Type', 'text/plain');
+  let responseText = 'This is the list of our students\n';
+
   countStudents(process.argv[2])
-    .then(() => {
-      console.log = originalLog;
-      res.end(output.join('\n'));
+    .then((lines) => {
+      responseText += lines.join('\n');
+      res.status(200).send(responseText);
     })
-    .catch((error) => {
-      console.log = originalLog;
-      res.status(500).end(error.message);
+    .catch(() => {
+      res.status(500).send('This is the list of our students\nCannot load the database');
     });
 });
 
-app.listen(1245);
+app.listen(PORT, () => {});
 
 module.exports = app;
