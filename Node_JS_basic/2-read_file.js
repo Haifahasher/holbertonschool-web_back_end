@@ -1,30 +1,44 @@
-const fs = require('fs');
+const { readFileSync } = require('node:fs');
 
-function countStudents(path) {
+const _try = (fn, ...args) => {
   try {
-    const data = fs.readFileSync(path, 'utf8');
-    const lines = data.trim().split('\n');
-    const students = lines.slice(1).filter((line) => line.trim() !== '');
-    const fields = {};
-
-    students.forEach((line) => {
-      const [firstname, , , field] = line.split(',');
-      if (field && firstname) {
-        if (!fields[field]) {
-          fields[field] = [];
-        }
-        fields[field].push(firstname);
-      }
-    });
-
-    console.log(`Number of students: ${students.length}`);
-    Object.keys(fields).sort().forEach((field) => {
-      console.log(`Number of students in ${field}: ${fields[field].length}. List: ${fields[field].join(', ')}`);
-    });
-  } catch (error) {
-    throw new Error('Cannot load the database');
+    return { isError: false, value: fn(...args) };
+  } catch (e) {
+    return { isError: true, value: e };
   }
+};
+const gaurd = (msg, fn, ...args) => {
+  const result = _try(fn, ...args);
+  if (result.isError) throw new Error(msg);
+  return result.value;
+};
+function countStudents(path) {
+  const db = gaurd('Cannot load the database', readFileSync, path, {
+    encoding: 'utf8',
+  });
+  const [headers, ...rows] = db
+    .split('\n')
+    .map((e) => e.split(','))
+    .filter((e) => e.length > 1);
+  console.log(`Number of students: ${rows.length}`);
+  const fieldIndex = headers.indexOf('field');
+  const firstNameIndex = headers.indexOf('firstname');
+  const fields = rows.reduce(
+    (fl, s) => (fl.includes(s[fieldIndex]) ? fl : fl.concat([s[fieldIndex]])),
+    [],
+  );
+  const firstNamesByField = fields.map((f) => [
+    f,
+    rows.filter((s) => s[fieldIndex] === f).map((s) => s[firstNameIndex]),
+  ]);
+
+  firstNamesByField.forEach(([field, firstNames]) => {
+    console.log(
+      `Number of students in ${field}: ${
+        firstNames.length
+      }. List: ${firstNames.join(', ')}`,
+    );
+  });
 }
 
 module.exports = countStudents;
-
