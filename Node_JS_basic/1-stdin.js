@@ -1,12 +1,14 @@
-#!/usr/bin/env node
-console.log('Welcome to Holberton School, what is your name?');
-const pin = process.stdin;
-pin.on('readable', () => {
-  pin.setEncoding('utf-8');
-  const d = pin.read();
-  if (d === null) return;
-  process.stdout.write(`Your name is: ${d}`);
+process.stdout.write('Welcome to Holberton School, what is your name?\n');
+
+process.stdin.setEncoding('utf8');
+
+process.stdin.on('readable', () => {
+  const chunk = process.stdin.read();
+  if (chunk !== null) {
+    process.stdout.write(`Your name is: ${chunk}`);
+  }
 });
-pin.on('end', () => {
-  console.log('This important software is now closing');
+
+process.stdin.on('end', () => {
+  process.stdout.write('This important software is now closing\n');
 });
